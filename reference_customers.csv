@@ -1,0 +1,201 @@
+customer_id,name,region
+CUST-000001,Company-000001,North America
+CUST-000002,Company-000002,Latin America
+CUST-000003,Company-000003,Asia-Pacific
+CUST-000004,Company-000004,Europe
+CUST-000005,Company-000005,North America
+CUST-000006,Company-000006,North America
+CUST-000007,Company-000007,North America
+CUST-000008,Company-000008,Asia-Pacific
+CUST-000009,Company-000009,Europe
+CUST-000010,Company-000010,Asia-Pacific
+CUST-000011,Company-000011,North America
+CUST-000012,Company-000012,Latin America
+CUST-000013,Company-000013,Asia-Pacific
+CUST-000014,Company-000014,North America
+CUST-000015,Company-000015,North America
+CUST-000016,Company-000016,North America
+CUST-000017,Company-000017,North America
+CUST-000018,Company-000018,Europe
+CUST-000019,Company-000019,Europe
+CUST-000020,Company-000020,North America
+CUST-000021,Company-000021,Europe
+CUST-000022,Company-000022,North America
+CUST-000023,Company-000023,North America
+CUST-000024,Company-000024,North America
+CUST-000025,Company-000025,Europe
+CUST-000026,Company-000026,Asia-Pacific
+CUST-000027,Company-000027,North America
+CUST-000028,Company-000028,Europe
+CUST-000029,Company-000029,Europe
+CUST-000030,Company-000030,North America
+CUST-000031,Company-000031,Europe
+CUST-000032,Company-000032,North America
+CUST-000033,Company-000033,North America
+CUST-000034,Company-000034,Latin America
+CUST-000035,Company-000035,Latin America
+CUST-000036,Company-000036,Asia-Pacific
+CUST-000037,Company-000037,North America
+CUST-000038,Company-000038,North America
+CUST-000039,Company-000039,Europe
+CUST-000040,Company-000040,Europe
+CUST-000041,Company-000041,North America
+CUST-000042,Company-000042,Europe
+CUST-000043,Company-000043,North America
+CUST-000044,Company-000044,Latin America
+CUST-000045,Company-000045,North America
+CUST-000046,Company-000046,Europe
+CUST-000047,Company-000047,North America
+CUST-000048,Company-000048,Europe
+CUST-000049,Company-000049,Europe
+CUST-000050,Company-000050,North America
+CUST-000051,Company-000051,Latin America
+CUST-000052,Company-000052,Asia-Pacific
+CUST-000053,Company-000053,Latin America
+CUST-000054,Company-000054,Asia-Pacific
+CUST-000055,Company-000055,Europe
+CUST-000056,Company-000056,Latin America
+CUST-000057,Company-000057,North America
+CUST-000058,Company-000058,North America
+CUST-000059,Company-000059,North America
+CUST-000060,Company-000060,North America
+CUST-000061,Company-000061,North America
+CUST-000062,Company-000062,North America
+CUST-000063,Company-000063,Asia-Pacific
+CUST-000064,Company-000064,North America
+CUST-000065,Company-000065,North America
+CUST-000066,Company-000066,Europe
+CUST-000067,Company-000067,North America
+CUST-000068,Company-000068,Asia-Pacific
+CUST-000069,Company-000069,North America
+CUST-000070,Company-000070,Latin America
+CUST-000071,Company-000071,Asia-Pacific
+CUST-000072,Company-000072,North America
+CUST-000073,Company-000073,North America
+CUST-000074,Company-000074,Asia-Pacific
+CUST-000075,Company-000075,Asia-Pacific
+CUST-000076,Company-000076,Asia-Pacific
+CUST-000077,Company-000077,Asia-Pacific
+CUST-000078,Company-000078,North America
+CUST-000079,Company-000079,North America
+CUST-000080,Company-000080,North America
+CUST-000081,Company-000081,Asia-Pacific
+CUST-000082,Company-000082,Europe
+CUST-000083,Company-000083,North America
+CUST-000084,Company-000084,North America
+CUST-000085,Company-000085,North America
+CUST-000086,Company-000086,North America
+CUST-000087,Company-000087,Asia-Pacific
+CUST-000088,Company-000088,Europe
+CUST-000089,Company-000089,Asia-Pacific
+CUST-000090,Company-000090,Europe
+CUST-000091,Company-000091,North America
+CUST-000092,Company-000092,Asia-Pacific
+CUST-000093,Company-000093,Asia-Pacific
+CUST-000094,Company-000094,Europe
+CUST-000095,Company-000095,Asia-Pacific
+CUST-000096,Company-000096,Europe
+CUST-000097,Company-000097,Europe
+CUST-000098,Company-000098,Europe
+CUST-000099,Company-000099,North America
+CUST-000100,Company-000100,North America
+CUST-000101,Company-000101,North America
+CUST-000102,Company-000102,Europe
+CUST-000103,Company-000103,North America
+CUST-000104,Company-000104,Europe
+CUST-000105,Company-000105,Latin America
+CUST-000106,Company-000106,North America
+CUST-000107,Company-000107,Europe
+CUST-000108,Company-000108,Asia-Pacific
+CUST-000109,Company-000109,North America
+CUST-000110,Company-000110,North America
+CUST-000111,Company-000111,North America
+CUST-000112,Company-000112,North America
+CUST-000113,Company-000113,Latin America
+CUST-000114,Company-000114,Asia-Pacific
+CUST-000115,Company-000115,Europe
+CUST-000116,Company-000116,Asia-Pacific
+CUST-000117,Company-000117,Asia-Pacific
+CUST-000118,Company-000118,North America
+CUST-000119,Company-000119,Asia-Pacific
+CUST-000120,Company-000120,Europe
+CUST-000121,Company-000121,Asia-Pacific
+CUST-000122,Company-000122,Asia-Pacific
+CUST-000123,Company-000123,North America
+CUST-000124,Company-000124,North America
+CUST-000125,Company-000125,North America
+CUST-000126,Company-000126,Europe
+CUST-000127,Company-000127,Asia-Pacific
+CUST-000128,Company-000128,Asia-Pacific
+CUST-000129,Company-000129,North America
+CUST-000130,Company-000130,Europe
+CUST-000131,Company-000131,Europe
+CUST-000132,Company-000132,North America
+CUST-000133,Company-000133,North America
+CUST-000134,Company-000134,North America
+CUST-000135,Company-000135,Latin America
+CUST-000136,Company-000136,North America
+CUST-000137,Company-000137,Europe
+CUST-000138,Company-000138,Asia-Pacific
+CUST-000139,Company-000139,North America
+CUST-000140,Company-000140,Latin America
+CUST-000141,Company-000141,Latin America
+CUST-000142,Company-000142,North America
+CUST-000143,Company-000143,Europe
+CUST-000144,Company-000144,North America
+CUST-000145,Company-000145,North America
+CUST-000146,Company-000146,North America
+CUST-000147,Company-000147,Europe
+CUST-000148,Company-000148,Europe
+CUST-000149,Company-000149,North America
+CUST-000150,Company-000150,North America
+CUST-000151,Company-000151,Latin America
+CUST-000152,Company-000152,North America
+CUST-000153,Company-000153,North America
+CUST-000154,Company-000154,Europe
+CUST-000155,Company-000155,Latin America
+CUST-000156,Company-000156,North America
+CUST-000157,Company-000157,Europe
+CUST-000158,Company-000158,Asia-Pacific
+CUST-000159,Company-000159,North America
+CUST-000160,Company-000160,Asia-Pacific
+CUST-000161,Company-000161,North America
+CUST-000162,Company-000162,Europe
+CUST-000163,Company-000163,Europe
+CUST-000164,Company-000164,Europe
+CUST-000165,Company-000165,North America
+CUST-000166,Company-000166,Asia-Pacific
+CUST-000167,Company-000167,North America
+CUST-000168,Company-000168,North America
+CUST-000169,Company-000169,North America
+CUST-000170,Company-000170,Europe
+CUST-000171,Company-000171,Europe
+CUST-000172,Company-000172,North America
+CUST-000173,Company-000173,Europe
+CUST-000174,Company-000174,North America
+CUST-000175,Company-000175,Europe
+CUST-000176,Company-000176,North America
+CUST-000177,Company-000177,Europe
+CUST-000178,Company-000178,North America
+CUST-000179,Company-000179,Latin America
+CUST-000180,Company-000180,North America
+CUST-000181,Company-000181,North America
+CUST-000182,Company-000182,North America
+CUST-000183,Company-000183,Latin America
+CUST-000184,Company-000184,Asia-Pacific
+CUST-000185,Company-000185,North America
+CUST-000186,Company-000186,Europe
+CUST-000187,Company-000187,Asia-Pacific
+CUST-000188,Company-000188,Europe
+CUST-000189,Company-000189,Europe
+CUST-000190,Company-000190,North America
+CUST-000191,Company-000191,North America
+CUST-000192,Company-000192,Asia-Pacific
+CUST-000193,Company-000193,Latin America
+CUST-000194,Company-000194,Europe
+CUST-000195,Company-000195,North America
+CUST-000196,Company-000196,North America
+CUST-000197,Company-000197,Asia-Pacific
+CUST-000198,Company-000198,Asia-Pacific
+CUST-000199,Company-000199,Asia-Pacific
+CUST-000200,Company-000200,Asia-Pacific

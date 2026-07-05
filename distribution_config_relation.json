@@ -1,0 +1,35 @@
+{
+  "num_customers": 200,
+  "num_invoices": 1000,
+  "customers": {
+    "regions": ["North America", "Europe", "Asia-Pacific", "Latin America"],
+    "region_probabilities": [0.4, 0.3, 0.2, 0.1]
+  },
+  "invoices": {
+    "amount": {
+      "distribution": "lognormal",
+      "mu": 6.2146,
+      "sigma": 0.8
+    },
+    "date": {
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "business_hours": {
+        "mean_hour": 13.0,
+        "std_hour": 2.5
+      }
+    },
+    "status": {
+      "categories": [
+        "paid",
+        "unpaid",
+        "refunded"
+      ],
+      "probabilities": [
+        0.7,
+        0.2,
+        0.1
+      ]
+    }
+  }
+}

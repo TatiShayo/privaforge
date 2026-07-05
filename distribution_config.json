@@ -1,0 +1,28 @@
+{
+  "num_rows": 1000,
+  "amount": {
+    "distribution": "lognormal",
+    "mu": 6.2146,
+    "sigma": 0.8
+  },
+  "date": {
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "business_hours": {
+      "mean_hour": 13.0,
+      "std_hour": 2.5
+    }
+  },
+  "status": {
+    "categories": [
+      "paid",
+      "unpaid",
+      "refunded"
+    ],
+    "probabilities": [
+      0.7,
+      0.2,
+      0.1
+    ]
+  }
+}

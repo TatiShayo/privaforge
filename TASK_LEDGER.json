@@ -1,0 +1,155 @@
+{
+  "project": "privaforge",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Pure-synthetic single-table generation",
+      "status": "COMPLETED",
+      "summary": "Set up directory structure, defined distribution config, generated reference data, fitted GaussianCopulaSynthesizer, generated synthetic dataset, and scored the output fidelity using SDMetrics (95.93% column shapes similarity).",
+      "tasks": [
+        {
+          "id": "setup_ledger",
+          "description": "Create TASK_LEDGER.json at root of privaforge",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "define_distribution_config",
+          "description": "Define realistic distribution config for invoice-shaped table (amount: lognormal, date: business hours, status: categorical)",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "implement_generator_script",
+          "description": "Create python script that generates reference data, fits SDV's GaussianCopulaSynthesizer, samples synthetic rows, and saves the output",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "score_fidelity",
+          "description": "Score output fidelity with SDMetrics against constructed reference dataset",
+          "status": "COMPLETED"
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Multi-table relational generation",
+      "status": "COMPLETED",
+      "summary": "Extended synthesizer pipeline to support relational multi-table datasets (customers and invoices). Configured hand-specified realistic distributions, integrated SDV's HMASynthesizer in pure-synthetic mode, added referential integrity verification (zero orphaned foreign keys), resolved input validations, and used atomic safe file writing to prevent race conditions.",
+      "tasks": [
+        {
+          "id": "relational_model_setup",
+          "description": "Extend schema and configuration to 2-table model (customers and invoices)",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "define_relational_distributions",
+          "description": "Specify distribution configuration for customer and invoice fields including lognormal amounts, business hours, and status probabilities",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "relational_generator_script",
+          "description": "Implement pure-synthetic generation pipeline using HMASynthesizer and Metadata classes",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "referential_integrity_check",
+          "description": "Implement checks verifying zero orphaned foreign keys in the synthetic dataset",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "address_findings_and_validation",
+          "description": "Address Phase 1 input validation findings and add safe atomic writes for output CSVs",
+          "status": "COMPLETED"
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Differential-privacy mode",
+      "status": "COMPLETED",
+      "summary": "Implemented a separate differentially private synthetic data generation pipeline (generate_dp_synthetic.py). Added Laplace mechanisms from diffprivlib to noise numeric (amount), timestamp (date), and categorical (status histogram) columns under a split privacy budget. Addressed security/privacy findings by defining fixed sensitivity on global bounds (10000.0 for amount, 31536000.0 for date), validating epsilon, using sys.executable in subprocess resolution, and implementing an atomic lock check to prevent TOCTOU race conditions. Also fixed timestamp boundary leakage using static domain bounds (1767225600.0 to 1798761600.0), resolved direct identifier copying by generating fresh synthetic invoice IDs, prevented categorical domain leakage by using a fixed status category list from configuration, and resolved seeding side-effects via np.random.default_rng. Re-evaluated quality at epsilons [1, 3, 5, 10] using SDMetrics and updated PRIVACY_TRADEOFF.md.",
+      "tasks": [
+        {
+          "id": "separate_dp_pipeline",
+          "description": "Create a separate script (generate_dp_synthetic.py) for the DP-based generation pipeline",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "diffprivlib_noise",
+          "description": "Apply Laplace/Gaussian noise to numeric, timestamp, and categorical columns using calibrated sensitivity",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "run_and_evaluate_dp",
+          "description": "Run the DP pipeline at epsilons [1, 3, 5, 10] and evaluate quality against seed data with SDMetrics",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "privacy_tradeoff_report",
+          "description": "Document the privacy-fidelity trade-off scores in PRIVACY_TRADEOFF.md",
+          "status": "COMPLETED"
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "CLI + QA Agent integration",
+      "status": "COMPLETED",
+      "summary": "Implemented CLI package wrapper in cli.py and __main__.py. Created new modular data generation functions for billflow (single table) and chamavault (relational multi-table schema) in generator.py. Built robust validations for rows, schema names, epsilon values, and mode combinations. Enabled automatic SDMetrics evaluation reports, writing synthetic CSVs and a QUALITY_REPORT.md file to the user-specified directory. Covered the system with a complete integration and unit test suite in test_cli.py. Addressed timezone dependencies in date conversion/quality report timestamping and PermissionError handling for directory creation.",
+      "tasks": [
+        {
+          "id": "cli_packaging",
+          "description": "Create a command-line interface in cli.py/main.py supporting generate subcommand, rows, schema, output, mode, and epsilon validations",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "portfolio_schemas",
+          "description": "Support billflow (single table) and chamavault (relational members/loans) schemas under pure-synthetic and DP-synthetic modes",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "quality_report",
+          "description": "Generate QUALITY_REPORT.md with details, SDMetrics column shape, and pair trends scores",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "testing_cli",
+          "description": "Create test_cli.py covering executions, validation edge cases, output structure, and markdown report format",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "security_findings",
+          "description": "Address the 4 security findings: timezone dependency, rows upper bound validation, PermissionError handling in safe_to_csv, and path traversal protection",
+          "status": "COMPLETED"
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Additional security/robustness improvements",
+      "status": "COMPLETED",
+      "summary": "Implemented atomic write logic for QUALITY_REPORT.md in cli.py and PRIVACY_TRADEOFF.md in generate_dp_synthetic.py. Wrapped lock file creation in try-except blocks handling PermissionError in generate_dp_synthetic.py. Implemented stale lock file cleanup (ignoring/deleting locks older than 60 seconds) in generate_dp_synthetic.py. Addressed security/privacy issues regarding differential privacy mathematical correctness by clipping input amounts to [0.0, 10000.0] and timestamps to [min_ts, max_ts] before passing them to the Laplace noise mechanisms. Covered all changes with unit tests.",
+      "tasks": [
+        {
+          "id": "atomic_write_quality_report",
+          "description": "Implement atomic write for QUALITY_REPORT.md using temporary file and atomic rename",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "permission_error_handling",
+          "description": "Handle PermissionError gracefully during lock file creation and PRIVACY_TRADEOFF.md writing",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "stale_lock_cleanup",
+          "description": "Delete or ignore stale lock files older than 60 seconds to avoid execution blocking",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "atomic_write_privacy_tradeoff",
+          "description": "Implement atomic write logic for PRIVACY_TRADEOFF.md in generate_dp_synthetic.py using a temporary file and rename pattern",
+          "status": "COMPLETED"
+        }
+      ]
+    }
+  ]
+}
