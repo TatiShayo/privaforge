@@ -3,7 +3,7 @@
   "run_id": "hermes-2026-07-27-v6-privaforge",
   "project": "privaforge",
   "phase": "4.0",
-  "produced_at": "2026-07-27T22:36:54.160216",
+  "produced_at": "2026-07-27T22:37:28.008506",
   "runner_tier": "T1",
   "mode": "static-only",
   "findings": [
