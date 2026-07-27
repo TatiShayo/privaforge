@@ -1,114 +1,46 @@
-[
-  {
-    "id": "PF-VAL-001",
-    "category": "Input Validation",
-    "file": "generate_synthetic_invoices.py",
-    "line": 10,
-    "severity": "Low",
-    "description": "Lack of error handling for file operations and JSON decoding in `load_config`. If `distribution_config.json` is missing or contains invalid JSON, the script will crash with unhandled FileNotFoundError or JSONDecodeError."
-  },
-  {
-    "id": "PF-VAL-002",
-    "category": "Input Validation",
-    "file": "generate_synthetic_invoices.py",
-    "line": 16,
-    "severity": "Medium",
-    "description": "The configuration parameter `num_rows` is loaded without validation. If `num_rows` is negative, non-integer, or extremely large, it will cause a crash (e.g. ValueError in numpy or TypeError in range) or lead to resource exhaustion / Out-Of-Memory (OOM) conditions."
-  },
-  {
-    "id": "PF-VAL-003",
-    "category": "Input Validation",
-    "file": "generate_synthetic_invoices.py",
-    "line": 23,
-    "severity": "Low",
-    "description": "Lognormal parameters (`mu` and `sigma`) are used directly from configuration without validation. If `sigma` is negative or zero, `np.random.lognormal` will throw a ValueError. Missing keys will cause KeyError."
-  },
-  {
-    "id": "PF-VAL-004",
-    "category": "Input Validation",
-    "file": "generate_synthetic_invoices.py",
-    "line": 30,
-    "severity": "Medium",
-    "description": "No range check on date configuration. If `end_date` is earlier than `start_date`, `delta_days` becomes negative, which causes `np.random.randint(0, delta_days + 1)` to fail with a ValueError (low >= high)."
-  },
-  {
-    "id": "PF-VAL-005",
-    "category": "Input Validation",
-    "file": "generate_synthetic_invoices.py",
-    "line": 44,
-    "severity": "Medium",
-    "description": "Missing verification of probability distributions for status categories. If the status probabilities do not sum to 1.0, or if their size does not match the categories list, `np.random.choice` will raise a ValueError."
-  },
-  {
-    "id": "PF-RACE-001",
-    "category": "Race Condition",
-    "file": "generate_synthetic_invoices.py",
-    "line": 66,
-    "severity": "Low",
-    "description": "Insecure file write operations. Writing directly to fixed paths (`reference_invoices.csv` and `synthetic_invoices.csv`) in-place can lead to race conditions/corrupted outputs if multiple instances of the script run concurrently. A safer approach is writing to a temp file first and then renaming it."
-  },
-  {
-    "id": "SEC-001",
-    "category": "Race Condition / File Handling",
-    "file": "generate_multi_table_synthetic.py",
-    "line": 223,
-    "severity": "Low",
-    "description": "The function 'safe_to_csv' writes to a temporary file in the same directory using 'tempfile.mkstemp', closes the file descriptor, writes the DataFrame, and performs 'os.replace'. On Windows, if 'filepath' is currently open or locked by another process, 'os.replace' will fail with a PermissionError. Additionally, there is a brief window between 'os.close(fd)' and 'os.replace(temp_path, filepath)' where the temporary file exists and could be modified/read by other local processes."
-  },
-  {
-    "id": "SEC-002",
-    "category": "Denial of Service / Resource Exhaustion",
-    "file": "generate_multi_table_synthetic.py",
-    "line": 34,
-    "severity": "Low",
-    "description": "While row counts are capped at 100,000, training and sampling relational models (like HMASynthesizer) with 100,000 rows can consume significant CPU and RAM, potentially leading to Out-Of-Memory (OOM) or Denial of Service (DoS) in resource-constrained environments."
-  },
-  {
-    "id": "SEC-003",
-    "category": "Input Validation",
-    "file": "generate_multi_table_synthetic.py",
-    "line": 22,
-    "severity": "Low",
-    "description": "The configuration input validation in 'validate_config' does not enforce length limits on string elements in lists (such as 'regions' or 'categories') or check for malicious payloads, which could potentially cause memory bloat or unexpected behavior during synthetic data generation."
-  },
-  {
-    "id": "SEC-004",
-    "category": "Privacy Leakage / Vulnerability",
-    "file": "generate_dp_synthetic.py",
-    "line": 41,
-    "severity": "High",
-    "description": "Laplace mechanism sensitivity for 'amount' is calculated dynamically from the actual private data using amounts.max() - amounts.min(). This leaks the minimum and maximum bounds of the dataset and violates differential privacy guarantees. Sensitivity should be defined based on global/domain bounds independent of the private dataset."
-  },
-  {
-    "id": "SEC-005",
-    "category": "Privacy Leakage / Vulnerability",
-    "file": "generate_dp_synthetic.py",
-    "line": 53,
-    "severity": "High",
-    "description": "Laplace mechanism sensitivity for 'date' (timestamp) is calculated dynamically from the actual private data using timestamps.max() - timestamps.min(). This leaks the minimum and maximum epoch timestamps of the dataset and violates differential privacy guarantees. Sensitivity should be defined based on global/domain bounds independent of the private dataset."
-  },
-  {
-    "id": "SEC-006",
-    "category": "Subprocess Executable Resolution Vulnerability",
-    "file": "generate_dp_synthetic.py",
-    "line": 89,
-    "severity": "Low",
-    "description": "Calling subprocess.run([\"python\", ...]) uses the system PATH to resolve 'python' instead of using sys.executable. This could execute a different or malicious Python interpreter if the PATH variable or execution context is compromised."
-  },
-  {
-    "id": "SEC-007",
-    "category": "Race Condition / TOCTOU",
-    "file": "generate_dp_synthetic.py",
-    "line": 86,
-    "severity": "Low",
-    "description": "The check 'if not os.path.exists(seed_path):' followed by generating the file via subprocess is a check-then-act pattern. Concurrent executions of the script can cause a race condition where multiple processes attempt to run the generation script and write to the same path simultaneously."
-  },
-  {
-    "id": "SEC-008",
-    "category": "Input Validation",
-    "file": "generate_dp_synthetic.py",
-    "line": 28,
-    "severity": "Low",
-    "description": "The 'epsilon' parameter in 'generate_dp_synthetic' is not validated to be positive and non-zero, which can lead to mathematical runtime errors or break differential privacy logic if invalid epsilon values are supplied."
-  }
-]
+{
+  "schema": "hermes.findings.v6",
+  "run_id": "hermes-2026-07-27-v6-privaforge",
+  "project": "privaforge",
+  "phase": "4.0",
+  "produced_at": "2026-07-27T22:10:07.871104",
+  "runner_tier": "T1",
+  "mode": "static-only",
+  "findings": [
+    {
+      "id": "F-V6-001",
+      "title": "Missing 'test' Script in package.json",
+      "severity": "medium",
+      "confidence_tier": "E2-P",
+      "actionability": "P2",
+      "fix_class": "config",
+      "confidence": 0.99,
+      "category": "correctness",
+      "cwe": "CWE-1025",
+      "locations": [
+        {
+          "file": "package.json",
+          "line": 5,
+          "symbol": "scripts"
+        }
+      ],
+      "impact": "Automated test harness cannot invoke test suite via npm test.",
+      "recommended_fix": "Add 'test': 'vitest run' to package.json scripts.",
+      "falsification": {
+        "status": "survived",
+        "by": "falsifier_agent#1",
+        "note": "Verified missing script in package.json."
+      },
+      "blast_radius": {
+        "reachable_from_internet": false,
+        "requires_auth": false,
+        "data_classes": []
+      },
+      "acceptance": {
+        "previously_accepted": false,
+        "context_hash": null,
+        "accepted_reason": null
+      }
+    }
+  ]
+}
