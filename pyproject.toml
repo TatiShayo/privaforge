@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "privaforge"
+version = "1.0.0"
+description = "Differential Privacy and Multi-Table Synthetic Data Generator"
+authors = [{ name = "HERMES v7 Architecture" }]
+readme = "PRIVACY_TRADEOFF.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy"
+]
+
+[project.scripts]
+privaforge = "cli:main"
+
+[tool.setuptools]
+packages = ["privaforge"]
+py-modules = ["accounting", "cli", "generator", "mechanisms", "queries", "synthesizer"]
