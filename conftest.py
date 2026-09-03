@@ -1,6 +1,12 @@
-# Ensures `import privaforge.*` resolves when pytest runs from inside the
-# project directory (the package lives at the repo root's parent level).
+# Ensures `import privaforge.*` and direct imports resolve hermetically
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+pkg_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(pkg_dir)
+
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+if pkg_dir not in sys.path:
+    sys.path.insert(0, pkg_dir)
+

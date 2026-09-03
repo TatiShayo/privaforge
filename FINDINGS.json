@@ -1,35 +1,70 @@
 {
   "schema": "hermes.findings.v6",
-  "run_id": "hermes-2026-07-27-v6-privaforge",
+  "run_id": "hermes-2026-08-15-v6-privaforge",
   "project": "privaforge",
-  "phase": "4.0",
-  "produced_at": "2026-07-27T23:26:47.605094",
-  "runner_tier": "T1",
-  "mode": "static-only",
+  "phase": "6.0",
+  "produced_at": "2026-08-15T07:55:00.000000",
+  "runner_tier": "T2",
+  "mode": "dynamic-verified",
   "findings": [
     {
       "id": "F-V6-001",
-      "title": "Missing 'test' Script in package.json",
-      "severity": "medium",
+      "title": "Unvectorized Lambda Datetime Conversion in Generator",
+      "severity": "low",
       "confidence_tier": "E2-P",
       "actionability": "P2",
-      "fix_class": "config",
-      "confidence": 0.99,
-      "category": "correctness",
-      "cwe": "CWE-1025",
+      "fix_class": "performance",
+      "confidence": 1.0,
+      "category": "performance",
+      "cwe": "CWE-400",
       "locations": [
         {
-          "file": "package.json",
-          "line": 5,
-          "symbol": "scripts"
+          "file": "generator.py",
+          "line": 70,
+          "symbol": "generate_billflow_dp"
         }
       ],
-      "impact": "Automated test harness cannot invoke test suite via npm test.",
-      "recommended_fix": "Add 'test': 'vitest run' to package.json scripts.",
+      "impact": "Slow iteration speed during large-scale tabular synthesis.",
+      "recommended_fix": "Replace Python lambda map with vectorized integer division timestamp conversion.",
       "falsification": {
-        "status": "survived",
-        "by": "falsifier_agent#1",
-        "note": "Verified missing script in package.json."
+        "status": "resolved",
+        "by": "hermes_v6_engineer",
+        "note": "Vectorized timestamp conversion implemented and verified."
+      },
+      "blast_radius": {
+        "reachable_from_internet": false,
+        "requires_auth": false,
+        "data_classes": []
+      },
+      "acceptance": {
+        "previously_accepted": false,
+        "context_hash": null,
+        "accepted_reason": null
+      }
+    },
+    {
+      "id": "F-V6-002",
+      "title": "Floating-point Underflow/Overflow in Exponential Mechanism",
+      "severity": "medium",
+      "confidence_tier": "E2-P",
+      "actionability": "P1",
+      "fix_class": "code",
+      "confidence": 1.0,
+      "category": "correctness",
+      "cwe": "CWE-682",
+      "locations": [
+        {
+          "file": "mechanisms.py",
+          "line": 280,
+          "symbol": "ExponentialMechanism.get_probabilities"
+        }
+      ],
+      "impact": "Unbounded utility scores could cause exp() to overflow to inf or underflow to 0, corrupting DP probability distributions.",
+      "recommended_fix": "Implement log-sum-exp numerical stabilization by subtracting max score before exponentiation.",
+      "falsification": {
+        "status": "resolved",
+        "by": "hermes_v6_engineer",
+        "note": "Log-sum-exp normalization implemented and verified with extreme value tests."
       },
       "blast_radius": {
         "reachable_from_internet": false,

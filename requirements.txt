@@ -1,0 +1,6 @@
+numpy>=1.26.0
+scipy>=1.11.0
+pandas>=2.0.0
+sdv>=1.0.0
+diffprivlib>=0.6.0
+pytest>=8.0.0

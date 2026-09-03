@@ -1,1 +1,69 @@
-.github/workflows/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Temporary and local files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+output/
+
+# Universal HERMES Ignore Rules
+node_modules/
+.npm-cache/
+.next/
+.turbo/
+.vercel/
+out/
+.ruff_cache/
+.venv/
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+$null
+*.zip
+*.tsbuildinfo
