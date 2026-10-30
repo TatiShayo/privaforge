@@ -100,10 +100,10 @@ def test_generate_reference_data_shapes(valid_config_dict):
     assert isinstance(ref_data, dict)
     assert "customers" in ref_data
     assert "invoices" in ref_data
-    
+
     cust_df = ref_data["customers"]
     inv_df = ref_data["invoices"]
-    
+
     assert len(cust_df) == 10
     assert len(inv_df) == 50
     assert list(cust_df.columns) == ["customer_id", "name", "region"]
@@ -134,7 +134,7 @@ def test_safe_to_csv(tmp_path):
     df = pd.DataFrame({"col1": [1, 2], "col2": [3, 4]})
     filepath = os.path.join(tmp_path, "subfolder", "output.csv")
     safe_to_csv(df, filepath)
-    
+
     assert os.path.exists(filepath)
     loaded_df = pd.read_csv(filepath)
     pd.testing.assert_frame_equal(df, loaded_df)
@@ -331,24 +331,20 @@ def test_check_referential_integrity_invalid_inputs():
 def test_hmasynthesizer_pipeline(valid_config_dict):
     from sdv.metadata import Metadata
     from sdv.multi_table import HMASynthesizer
-    
-    # 1. Generate reference data
+
     ref_data = generate_reference_data(valid_config_dict)
-    
-    # 2. Detect Metadata
+
     metadata = Metadata.detect_from_dataframes(ref_data)
-    
-    # 3. Fit Synthesizer
+
     synthesizer = HMASynthesizer(metadata)
     synthesizer.fit(ref_data)
-    
-    # 4. Sample
+
     synthetic_data = synthesizer.sample(scale=1.0)
     assert "customers" in synthetic_data
     assert "invoices" in synthetic_data
     assert len(synthetic_data["customers"]) > 0
     assert len(synthetic_data["invoices"]) > 0
-    
+
     # Check that referential integrity holds
     assert check_referential_integrity(synthetic_data) is True
 
@@ -370,19 +366,18 @@ def test_safe_to_csv_cleanup_on_error(tmp_path, monkeypatch):
     import pandas as pd
     df = pd.DataFrame({"col1": [1]})
     filepath = os.path.join(tmp_path, "output.csv")
-    
+
     # Mock to_csv to raise an Exception
     def mock_to_csv(*args, **kwargs):
-        # Create the temp file so we can check if it gets cleaned up
         # The temp file path will end with .tmp and be in the directory of filepath
         # We can find it and assert its existence before we raise
         raise RuntimeError("Write failed")
-        
+
     monkeypatch.setattr(pd.DataFrame, "to_csv", mock_to_csv)
-    
+
     with pytest.raises(RuntimeError, match="Write failed"):
         safe_to_csv(df, filepath)
-        
+
     # Check that no stray temp files are left in the directory
     dir_contents = os.listdir(tmp_path)
     assert len(dir_contents) == 0
@@ -390,37 +385,35 @@ def test_safe_to_csv_cleanup_on_error(tmp_path, monkeypatch):
 def test_main_execution(tmp_path, monkeypatch, valid_config_dict):
     # Mocking files/paths within main
     import generate_multi_table_synthetic
-    
+
     # Write custom configuration file
     config_file = tmp_path / "distribution_config_relation.json"
     with open(config_file, "w") as f:
         json.dump(valid_config_dict, f)
-        
+
     # We will override paths within main to point to our temp directory
     base_dir = str(tmp_path)
     ref_cust_path = os.path.join(base_dir, "reference_customers.csv")
     ref_inv_path = os.path.join(base_dir, "reference_invoices.csv")
     syn_cust_path = os.path.join(base_dir, "synthetic_customers.csv")
     syn_inv_path = os.path.join(base_dir, "synthetic_invoices.csv")
-    
+
     # We can patch os.path.join or __file__
     monkeypatch.setattr(generate_multi_table_synthetic, "__file__", os.path.join(base_dir, "generate_multi_table_synthetic.py"))
-    
+
     # Let's run the main function
     # In main(), Metadata.detect_from_dataframes is run. We should make sure reference data has correct keys set or metadata can auto-detect them.
     # Actually, Metadata.detect_from_dataframes automatically detects customer_id in both and we might need to verify if HMASynthesizer fits successfully.
     # Let's call main()!
     generate_multi_table_synthetic.main()
-    
+
     # Assert all files were created
     assert os.path.exists(ref_cust_path)
     assert os.path.exists(ref_inv_path)
     assert os.path.exists(syn_cust_path)
     assert os.path.exists(syn_inv_path)
-    
-    # Ensure they have valid contents
+
     ref_cust = pd.read_csv(ref_cust_path)
     syn_cust = pd.read_csv(syn_cust_path)
     assert len(ref_cust) == 10
     assert len(syn_cust) > 0
-

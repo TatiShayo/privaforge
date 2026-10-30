@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from unittest.mock import patch, MagicMock
 import time
 
-
 from generate_dp_synthetic import (
     safe_to_csv,
     generate_dp_synthetic,
@@ -27,7 +26,7 @@ def test_safe_to_csv_success(tmp_path, sample_seed_df):
     """Test that safe_to_csv writes the DataFrame successfully."""
     filepath = tmp_path / "subdir" / "output.csv"
     safe_to_csv(sample_seed_df, str(filepath))
-    
+
     assert filepath.exists()
     loaded_df = pd.read_csv(str(filepath))
     assert len(loaded_df) == len(sample_seed_df)
@@ -36,11 +35,11 @@ def test_safe_to_csv_success(tmp_path, sample_seed_df):
 def test_safe_to_csv_failure(tmp_path, sample_seed_df):
     """Test that safe_to_csv cleans up the temp file if writing fails."""
     filepath = tmp_path / "failed_output.csv"
-    
+
     with patch("pandas.DataFrame.to_csv", side_effect=Exception("Simulated write error")):
         with pytest.raises(Exception, match="Simulated write error"):
             safe_to_csv(sample_seed_df, str(filepath))
-            
+
     # The final file should not exist, and no temp files should be left in the directory
     assert not filepath.exists()
     leftover_files = list(tmp_path.glob("*.tmp"))
@@ -49,15 +48,15 @@ def test_safe_to_csv_failure(tmp_path, sample_seed_df):
 def test_generate_dp_synthetic_budget_splitting(sample_seed_df):
     """Verify DP budget splitting: epsilon is divided equally among amount, date, and status."""
     epsilon = 3.0
-    
+
     # We patch Laplace to intercept its creation and verify the epsilon parameter
     with patch("generate_dp_synthetic.Laplace") as mock_laplace:
         mock_laplace_instance = MagicMock()
         mock_laplace_instance.randomise.side_effect = lambda x: float(x)
         mock_laplace.return_value = mock_laplace_instance
-        
+
         generate_dp_synthetic(sample_seed_df, epsilon)
-        
+
         # Laplace is instantiated 3 times (amount, date, status)
         assert mock_laplace.call_count == 3
         for call in mock_laplace.call_args_list:
@@ -81,9 +80,9 @@ def test_generate_dp_synthetic_amount_clipping_and_rounding(sample_seed_df):
             1.0, 1.0, 1.0  # status counts
         ]
         mock_laplace.return_value = mock_laplace_instance
-        
+
         result_df = generate_dp_synthetic(sample_seed_df, epsilon)
-        
+
         # amounts should be:
         # -10.0 -> clipped to 0.01
         # 0.001 -> clipped to 0.01
@@ -97,7 +96,7 @@ def test_generate_dp_synthetic_date_bounds(sample_seed_df):
     """Verify that noised timestamp date column is clipped within static bounds."""
     epsilon = 3.0
     min_ts, max_ts = 1767225600.0, 1798761600.0
-    
+
     with patch("generate_dp_synthetic.Laplace") as mock_laplace:
         mock_laplace_instance = MagicMock()
         # Mock randomise to return timestamp below static min_ts, above static max_ts, and inside
@@ -107,9 +106,9 @@ def test_generate_dp_synthetic_date_bounds(sample_seed_df):
             1.0, 1.0, 1.0 # status counts
         ]
         mock_laplace.return_value = mock_laplace_instance
-        
+
         result_df = generate_dp_synthetic(sample_seed_df, epsilon)
-        
+
         # Verify result datetimes are clipped to static min_ts and max_ts
         assert result_df["date"].iloc[0] == datetime.fromtimestamp(min_ts, tz=timezone.utc).replace(tzinfo=None)
         assert result_df["date"].iloc[1] == datetime.fromtimestamp(max_ts, tz=timezone.utc).replace(tzinfo=None)
@@ -128,9 +127,9 @@ def test_generate_dp_synthetic_status_sum_noised_positive(sample_seed_df):
             10.0, 0.0, 0.0 # status counts: sum_noised = 10.0 > 0
         ]
         mock_laplace.return_value = mock_laplace_instance
-        
+
         result_df = generate_dp_synthetic(sample_seed_df, epsilon)
-        
+
         # Since only one status count is positive (10.0) and others are 0.0:
         # categories = ["paid", "unpaid", "refunded"] or similar
         # Since probs is [1.0, 0.0, 0.0] or similar (depending on index order), all choices must be the first category
@@ -143,14 +142,13 @@ def test_generate_dp_synthetic_status_sum_noised_zero_or_negative(sample_seed_df
     epsilon = 3.0
     with patch("generate_dp_synthetic.Laplace") as mock_laplace:
         mock_laplace_instance = MagicMock()
-        # Return negative values or zeros for all status counts so that sum_noised is 0.0
         mock_laplace_instance.randomise.side_effect = [
             100.0, 100.0, 100.0, 100.0, 100.0, # amounts
             1767225600.0, 1767225600.0, 1767225600.0, 1767225600.0, 1767225600.0, # dates
             -5.0, -10.0, 0.0 # status counts: noised_counts will be [0.0, 0.0, 0.0], sum_noised = 0
         ]
         mock_laplace.return_value = mock_laplace_instance
-        
+
         # In this fallback path: probs = [1.0 / len(categories)] * len(categories)
         # We can verify that rng.choice gets called with equal probabilities.
         mock_rng = MagicMock()
@@ -169,14 +167,14 @@ def test_generate_dp_synthetic_epsilon_bounds(sample_seed_df):
     # Epsilon = 1e-5 (extremely high noise) vs Epsilon = 1e8 (negligible noise)
     df_low_eps = generate_dp_synthetic(sample_seed_df, 1e-5)
     df_high_eps = generate_dp_synthetic(sample_seed_df, 1e8)
-    
+
     # High epsilon should match the seed dataset very closely for numeric values
     pd.testing.assert_series_equal(
         df_high_eps["amount"].round(1),
         sample_seed_df["amount"].astype(float).round(1),
         check_names=False
     )
-    
+
     # Low epsilon amounts should be very different (due to high noise)
     diff = np.abs(df_low_eps["amount"] - sample_seed_df["amount"].astype(float))
     assert diff.mean() > 10.0
@@ -186,23 +184,23 @@ def test_main_execution_reference_exists(tmp_path, sample_seed_df):
     # Write a small reference invoices csv
     seed_path = tmp_path / "reference_invoices.csv"
     sample_seed_df.to_csv(seed_path, index=False)
-    
+
     with patch("os.path.exists", return_value=True), \
          patch("pandas.read_csv", return_value=sample_seed_df), \
          patch("generate_dp_synthetic.safe_to_csv") as mock_safe_to_csv, \
          patch("generate_dp_synthetic.evaluate_quality") as mock_evaluate, \
          patch("generate_dp_synthetic.safe_write_text") as mock_safe_write_text:
-        
+
         mock_report = MagicMock()
         mock_report.get_score.return_value = 0.85
         mock_evaluate.return_value = mock_report
-        
+
         main()
-        
+
         # 4 epsilons [1, 3, 5, 10] -> 4 calls to safe_to_csv, 4 calls to evaluate_quality
         assert mock_safe_to_csv.call_count == 4
         assert mock_evaluate.call_count == 4
-        
+
         # Verify writing PRIVACY_TRADEOFF.md occurred
         mock_safe_write_text.assert_called_once()
         args, kwargs = mock_safe_write_text.call_args
@@ -217,13 +215,13 @@ def test_main_execution_reference_does_not_exist(tmp_path, sample_seed_df):
          patch("generate_dp_synthetic.safe_to_csv") as mock_safe_to_csv, \
          patch("generate_dp_synthetic.evaluate_quality") as mock_evaluate, \
          patch("generate_dp_synthetic.safe_write_text") as mock_safe_write_text:
-        
+
         mock_report = MagicMock()
         mock_report.get_score.return_value = 0.85
         mock_evaluate.return_value = mock_report
-        
+
         main()
-        
+
         # Should call subprocess run to generate reference invoices
         mock_run.assert_called_once()
         assert "generate_synthetic_invoices.py" in mock_run.call_args[0][0][1]
@@ -245,13 +243,13 @@ def test_main_stale_lock_cleanup(sample_seed_df):
          patch("generate_dp_synthetic.safe_to_csv"), \
          patch("generate_dp_synthetic.evaluate_quality") as mock_evaluate, \
          patch("generate_dp_synthetic.safe_write_text"):
-        
+
         mock_report = MagicMock()
         mock_report.get_score.return_value = 0.85
         mock_evaluate.return_value = mock_report
-        
+
         main()
-        
+
         any_lock_removed = any(str(call_args[0][0]).endswith(".lock") for call_args in mock_remove.call_args_list)
         assert any_lock_removed
 
@@ -265,11 +263,11 @@ def test_main_lock_permission_error(sample_seed_df):
          patch("generate_dp_synthetic.safe_to_csv"), \
          patch("generate_dp_synthetic.evaluate_quality") as mock_evaluate, \
          patch("generate_dp_synthetic.safe_write_text"):
-         
+
         mock_report = MagicMock()
         mock_report.get_score.return_value = 0.85
         mock_evaluate.return_value = mock_report
-        
+
         main()
         mock_run.assert_called_once()
         assert "generate_synthetic_invoices.py" in mock_run.call_args[0][0][1]
@@ -281,11 +279,11 @@ def test_main_privacy_tradeoff_permission_error(sample_seed_df):
          patch("generate_dp_synthetic.safe_to_csv"), \
          patch("generate_dp_synthetic.evaluate_quality") as mock_evaluate, \
          patch("generate_dp_synthetic.safe_write_text", side_effect=PermissionError("Permission denied: 'PRIVACY_TRADEOFF.md'")):
-         
+
         mock_report = MagicMock()
         mock_report.get_score.return_value = 0.85
         mock_evaluate.return_value = mock_report
-        
+
         with pytest.raises(PermissionError) as excinfo:
             main()
         assert "Permission denied" in str(excinfo.value)

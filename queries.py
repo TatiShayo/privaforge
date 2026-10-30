@@ -23,7 +23,6 @@ except ImportError:
     from mechanisms import LaplaceMechanism, GaussianMechanism, ExponentialMechanism
     from accounting import PrivacyBudgetTracker
 
-
 def _prepare_array(data: Any) -> np.ndarray:
     """Helper to convert input to clean 1D float array with NaN/Inf handling."""
     if isinstance(data, (pd.Series, pd.Index)):
@@ -32,12 +31,11 @@ def _prepare_array(data: Any) -> np.ndarray:
         arr = data.dropna().to_numpy(dtype=float).ravel()
     else:
         arr = np.asarray(data, dtype=float)
-        
+
     arr = arr[~np.isnan(arr) & ~np.isinf(arr)]
     if arr.size == 0:
         raise ValueError("Input data cannot be empty or contain only NaNs/Infs")
     return arr
-
 
 def dp_count(
     data: Any,
@@ -54,7 +52,7 @@ def dp_count(
     """
     if tracker is not None:
         tracker.spend(epsilon, delta, label="dp_count")
-        
+
     if isinstance(data, (int, float, np.number)):
         raw_count = float(data)
     else:
@@ -76,7 +74,6 @@ def dp_count(
     else:
         raise ValueError(f"Unsupported mechanism '{mechanism}'. Choose 'laplace' or 'gaussian'.")
 
-
 def dp_sum(
     data: Any,
     lower: float,
@@ -94,15 +91,15 @@ def dp_sum(
     """
     if lower > upper:
         raise ValueError(f"lower ({lower}) cannot be greater than upper ({upper})")
-        
+
     arr = _prepare_array(data)
     clipped = np.clip(arr, lower, upper)
     raw_sum = float(np.sum(clipped))
-    
+
     sensitivity = float(upper - lower)
     if tracker is not None:
         tracker.spend(epsilon, delta, label="dp_sum")
-        
+
     if mechanism.lower() == "laplace":
         mech = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity, random_state=random_state)
         return mech.randomise(raw_sum)
@@ -113,7 +110,6 @@ def dp_sum(
         return mech.randomise(raw_sum)
     else:
         raise ValueError(f"Unsupported mechanism '{mechanism}'. Choose 'laplace' or 'gaussian'.")
-
 
 def dp_mean(
     data: Any,
@@ -141,10 +137,10 @@ def dp_mean(
             raise ValueError(f"n_public must be a positive integer, got {n_public}")
         if tracker is not None:
             tracker.spend(epsilon, delta, label="dp_mean_n_public")
-            
+
         raw_mean = float(np.sum(clipped) / float(n_public))
         sensitivity = float(upper - lower) / float(n_public)
-        
+
         if mechanism.lower() == "laplace":
             mech = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity, min_val=lower, max_val=upper, random_state=random_state)
             return mech.randomise(raw_mean)
@@ -174,7 +170,6 @@ def dp_mean(
         estimated_mean = noisy_sum / safe_count
         return float(np.clip(estimated_mean, lower, upper))
 
-
 def dp_variance(
     data: Any,
     lower: float,
@@ -193,14 +188,14 @@ def dp_variance(
 
     arr = _prepare_array(data)
     clipped = np.clip(arr, lower, upper)
-    
+
     max_abs = max(abs(lower), abs(upper))
     sq_lower = 0.0
     sq_upper = float(max_abs ** 2)
 
     eps_half = epsilon / 2.0
     delta_half = delta / 2.0 if delta > 0 else 0.0
-    
+
     if tracker is not None:
         tracker.spend(epsilon, delta, label="dp_variance")
 
@@ -210,7 +205,6 @@ def dp_variance(
     var = e_x2 - (e_x ** 2)
     max_var = ((upper - lower) ** 2) / 4.0
     return float(np.clip(var, 0.0, max_var))
-
 
 def dp_std(
     data: Any,
@@ -224,7 +218,6 @@ def dp_std(
     """Differentially private bounded standard deviation."""
     var = dp_variance(data, lower, upper, epsilon, delta, tracker=tracker, random_state=random_state)
     return math.sqrt(var)
-
 
 def dp_quantile(
     data: Any,
@@ -270,7 +263,6 @@ def dp_quantile(
     selected_val = mech.select(cands, utilities)
     return float(selected_val)
 
-
 def dp_median(
     data: Any,
     lower: float,
@@ -293,7 +285,6 @@ def dp_median(
         tracker=tracker,
         random_state=random_state
     )
-
 
 def dp_histogram(
     data: Any,
@@ -361,7 +352,6 @@ def dp_histogram(
 
     return dict(zip(bin_labels, noised_counts))
 
-
 def dp_covariance_matrix(
     df: pd.DataFrame,
     columns: Sequence[str],
@@ -382,7 +372,7 @@ def dp_covariance_matrix(
     d = len(columns)
     if d == 0:
         raise ValueError("Columns list cannot be empty")
-        
+
     df_clean = df[list(columns)].dropna()
     n = len(df_clean)
     if n == 0:
@@ -428,7 +418,6 @@ def dp_covariance_matrix(
             cov_matrix[i, j] = psd_gram[i, j] * ranges[i] * ranges[j]
 
     return cov_matrix
-
 
 def dp_correlation_matrix(
     df: pd.DataFrame,

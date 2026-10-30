@@ -14,16 +14,14 @@ from typing import List, Dict, Tuple, Optional, Union, Any, Sequence
 from contextlib import contextmanager
 import numpy as np
 
-
 class BudgetExhaustedError(Exception):
     """Exception raised when a privacy query exceeds the remaining budget."""
     pass
 
-
 class PrivacyBudgetTracker:
     """
     Privacy budget tracker enforcing (epsilon, delta) limits across queries.
-    
+
     Supports:
     - Sequential and Advanced composition tracking.
     - Budget splitting and sub-allocation.
@@ -41,7 +39,7 @@ class PrivacyBudgetTracker:
             raise ValueError(f"Total epsilon must be a valid number, got {total_epsilon}")
         if total_epsilon <= 0:
             raise ValueError(f"Total epsilon must be strictly positive (> 0), got {total_epsilon}")
-            
+
         if not isinstance(total_delta, (int, float)) or math.isnan(total_delta):
             raise ValueError(f"Total delta must be a valid number, got {total_delta}")
         if total_delta < 0 or total_delta > 1:
@@ -50,7 +48,7 @@ class PrivacyBudgetTracker:
         self.total_epsilon = float(total_epsilon)
         self.total_delta = float(total_delta)
         self.name = str(name)
-        
+
         self.spent_epsilon = 0.0
         self.spent_delta = 0.0
         self.ledger: List[Dict[str, Any]] = []
@@ -73,7 +71,7 @@ class PrivacyBudgetTracker:
             raise ValueError("Epsilon and delta cannot be NaN")
         if epsilon < 0 or delta < 0:
             raise ValueError("Requested epsilon and delta must be non-negative")
-            
+
         eps_ok = (self.spent_epsilon + epsilon <= self.total_epsilon + 1e-12) or math.isinf(self.total_epsilon)
         delta_ok = (self.spent_delta + delta <= self.total_delta + 1e-12)
         return eps_ok and delta_ok
@@ -134,10 +132,10 @@ class PrivacyBudgetTracker:
         """Split total budget equally into num_splits independent child trackers."""
         if not isinstance(num_splits, int) or num_splits <= 0:
             raise ValueError(f"num_splits must be a positive integer, got {num_splits}")
-            
+
         eps_per_child = self.remaining_epsilon / num_splits
         delta_per_child = self.remaining_delta / num_splits
-        
+
         children = []
         for i in range(num_splits):
             child = PrivacyBudgetTracker(
@@ -154,7 +152,7 @@ class PrivacyBudgetTracker:
         if np.any(np.isnan(props)) or np.any(props < 0) or np.sum(props) <= 0:
             raise ValueError("Proportions must be non-negative, non-NaN, and sum to > 0")
         norm_props = props / np.sum(props)
-        
+
         children = []
         for i, p in enumerate(norm_props):
             child = PrivacyBudgetTracker(
@@ -168,7 +166,7 @@ class PrivacyBudgetTracker:
     def advanced_composition(self, delta_prime: Optional[float] = None) -> Tuple[float, float]:
         """
         Compute total privacy spent under Advanced Composition Theorem (Dwork et al.).
-        
+
         For k queries with eps_i and delta_i:
         eps_AC = sqrt(2 * ln(1 / delta') * sum(eps_i^2)) + sum(eps_i * (exp(eps_i) - 1))
         delta_AC = sum(delta_i) + delta'
@@ -182,17 +180,17 @@ class PrivacyBudgetTracker:
 
         eps_list = [entry["epsilon"] for entry in self.ledger]
         delta_list = [entry["delta"] for entry in self.ledger]
-        
+
         sum_delta = sum(delta_list)
         if delta_prime is None:
             delta_prime = max(1e-6, (self.total_delta - sum_delta) / 2.0) if self.total_delta < 1.0 else 1e-5
 
         sum_eps_sq = sum(e ** 2 for e in eps_list)
         sum_linear_factor = sum(e * (math.exp(e) - 1.0) for e in eps_list)
-        
+
         eps_ac = math.sqrt(2.0 * math.log(1.0 / delta_prime) * sum_eps_sq) + sum_linear_factor
         delta_ac = sum_delta + delta_prime
-        
+
         return float(eps_ac), float(delta_ac)
 
     def reset(self):
@@ -201,11 +199,10 @@ class PrivacyBudgetTracker:
         self.spent_delta = 0.0
         self.ledger.clear()
 
-
 class RenyiDPAccountant:
     """
     Rényi Differential Privacy (RDP) Accountant.
-    
+
     Tracks RDP order-by-order and computes optimal (epsilon, delta)-DP bounds.
     Order alpha in (1, inf).
     """
@@ -260,7 +257,7 @@ class RenyiDPAccountant:
             raise ValueError(f"Sensitivity must be positive (> 0), got {sensitivity}")
         if count <= 0:
             raise ValueError(f"Count must be positive (> 0), got {count}")
-            
+
         eps = sensitivity / scale
         rdp_step = np.zeros_like(self.orders)
         for i, alpha in enumerate(self.orders):
@@ -271,7 +268,7 @@ class RenyiDPAccountant:
             inner = term1 + term2
             rdp_val = eps + (1.0 / (alpha - 1.0)) * math.log(max(1e-15, inner))
             rdp_step[i] = rdp_val * float(count)
-            
+
         self.rdp += rdp_step
         self.history.append({
             "type": "laplace",
@@ -322,7 +319,7 @@ class RenyiDPAccountant:
         """
         if not isinstance(target_delta, (int, float)) or math.isnan(target_delta) or target_delta <= 0 or target_delta >= 1:
             raise ValueError(f"target_delta must be in (0, 1), got {target_delta}")
-            
+
         eps_candidates = self.rdp + np.log(1.0 / target_delta) / (self.orders - 1.0)
         return float(np.min(eps_candidates))
 
@@ -330,7 +327,6 @@ class RenyiDPAccountant:
         """Reset accumulated RDP."""
         self.rdp.fill(0.0)
         self.history.clear()
-
 
 class MomentsAccountant:
     """
@@ -368,7 +364,7 @@ class MomentsAccountant:
         """
         if not isinstance(target_delta, (int, float)) or math.isnan(target_delta) or target_delta <= 0 or target_delta >= 1:
             raise ValueError(f"Target delta must be in (0, 1), got {target_delta}")
-            
+
         eps_candidates = (self.log_moments + math.log(1.0 / target_delta)) / self.lambdas
         return float(np.min(eps_candidates))
 

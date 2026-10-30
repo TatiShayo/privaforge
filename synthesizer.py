@@ -32,22 +32,20 @@ except ImportError:
         dp_correlation_matrix
     )
 
-
 def compute_wasserstein_distance(real_series: Sequence[float], synth_series: Sequence[float]) -> float:
     """
     Compute the 1-Wasserstein distance (Earth Mover's Distance) between real and synthetic continuous variables.
     """
     real_arr = np.asarray(real_series, dtype=float)
     synth_arr = np.asarray(synth_series, dtype=float)
-    
+
     real_clean = real_arr[~np.isnan(real_arr) & ~np.isinf(real_arr)]
     synth_clean = synth_arr[~np.isnan(synth_arr) & ~np.isinf(synth_arr)]
-    
+
     if len(real_clean) == 0 or len(synth_clean) == 0:
         raise ValueError("Inputs must contain at least one non-NaN element")
-        
-    return float(stats.wasserstein_distance(real_clean, synth_clean))
 
+    return float(stats.wasserstein_distance(real_clean, synth_clean))
 
 def compute_total_variation_distance(real_series: Sequence[Any], synth_series: Sequence[Any]) -> float:
     """
@@ -55,22 +53,21 @@ def compute_total_variation_distance(real_series: Sequence[Any], synth_series: S
     """
     r_s = pd.Series(real_series).dropna().astype(str)
     s_s = pd.Series(synth_series).dropna().astype(str)
-    
+
     all_categories = sorted(list(set(r_s.unique()).union(set(s_s.unique()))))
     if not all_categories:
         return 0.0
-        
+
     r_counts = r_s.value_counts(normalize=True)
     s_counts = s_s.value_counts(normalize=True)
-    
+
     tvd = 0.0
     for cat in all_categories:
         p_real = float(r_counts.get(cat, 0.0))
         p_synth = float(s_counts.get(cat, 0.0))
         tvd += abs(p_real - p_synth)
-        
-    return float(0.5 * tvd)
 
+    return float(0.5 * tvd)
 
 def compute_correlation_error(
     real_df: pd.DataFrame,
@@ -85,18 +82,17 @@ def compute_correlation_error(
             c for c in real_df.columns
             if c in synth_df.columns and pd.api.types.is_numeric_dtype(real_df[c])
         ]
-        
+
     if len(numerical_columns) < 2:
         return 0.0
 
     real_corr = real_df[list(numerical_columns)].corr().fillna(0.0).to_numpy()
     synth_corr = synth_df[list(numerical_columns)].corr().fillna(0.0).to_numpy()
-    
+
     d = len(numerical_columns)
     diff = real_corr - synth_corr
     frobenius = np.linalg.norm(diff, ord="fro")
     return float(frobenius / float(d))
-
 
 def evaluate_synthetic_fidelity(
     real_df: pd.DataFrame,
@@ -112,7 +108,7 @@ def evaluate_synthetic_fidelity(
             c for c in real_df.columns
             if c in synth_df.columns and pd.api.types.is_numeric_dtype(real_df[c])
         ]
-        
+
     if categorical_columns is None:
         categorical_columns = [
             c for c in real_df.columns
@@ -158,7 +154,6 @@ def evaluate_synthetic_fidelity(
         "categorical_columns": tvd_scores
     }
 
-
 class DPSyntheticTabularGenerator:
     """
     Differentially Private Tabular Synthetic Data Generator.
@@ -173,7 +168,7 @@ class DPSyntheticTabularGenerator:
     ):
         self.column_types = column_types
         self.column_bounds = column_bounds or {}
-        
+
         if isinstance(random_state, np.random.Generator):
             self.rng = random_state
         elif random_state is not None:
@@ -228,7 +223,7 @@ class DPSyntheticTabularGenerator:
             series = data[col].dropna()
             if len(series) == 0:
                 raise ValueError(f"Column '{col}' contains only missing values")
-            
+
             if col_type == "categorical":
                 hist = dp_histogram(series, epsilon=eps_per_col, normalize=True, random_state=self.rng)
                 self.fitted_params[col] = {
@@ -236,7 +231,7 @@ class DPSyntheticTabularGenerator:
                     "categories": list(hist.keys()),
                     "probabilities": list(hist.values())
                 }
-                
+
             elif col_type == "datetime":
                 dt_series = pd.to_datetime(series)
                 if dt_series.dt.tz is None:
@@ -244,12 +239,12 @@ class DPSyntheticTabularGenerator:
                 else:
                     dates_utc = dt_series.dt.tz_convert(timezone.utc)
                 ts_arr = (dates_utc.astype("int64") // 10**9).to_numpy(dtype=float)
-                
+
                 low_ts, high_ts = self.column_bounds.get(col, (1767225600.0, 1798761600.0))
-                
+
                 ts_mean = dp_mean(ts_arr, lower=low_ts, upper=high_ts, epsilon=eps_per_col / 2.0, random_state=self.rng)
                 ts_var = dp_variance(ts_arr, lower=low_ts, upper=high_ts, epsilon=eps_per_col / 2.0, random_state=self.rng)
-                
+
                 self.fitted_params[col] = {
                     "type": "datetime",
                     "mean_ts": ts_mean,
@@ -262,11 +257,11 @@ class DPSyntheticTabularGenerator:
                 log_vals = np.log(np.maximum(1e-4, series.to_numpy(dtype=float)))
                 log_low = math.log(max(1e-4, low))
                 log_high = math.log(max(1e-3, high))
-                
+
                 dp_mu = dp_mean(log_vals, lower=log_low, upper=log_high, epsilon=eps_per_col / 2.0, random_state=self.rng)
                 dp_var = dp_variance(log_vals, lower=log_low, upper=log_high, epsilon=eps_per_col / 2.0, random_state=self.rng)
                 dp_sig = max(0.01, math.sqrt(dp_var))
-                
+
                 self.fitted_params[col] = {
                     "type": "lognormal",
                     "mu": dp_mu,
@@ -280,7 +275,7 @@ class DPSyntheticTabularGenerator:
                 dp_m = dp_mean(vals, lower=low, upper=high, epsilon=eps_per_col / 2.0, random_state=self.rng)
                 dp_v = dp_variance(vals, lower=low, upper=high, epsilon=eps_per_col / 2.0, random_state=self.rng)
                 dp_s = max(1e-4, math.sqrt(dp_v))
-                
+
                 self.fitted_params[col] = {
                     "type": "normal",
                     "mean": dp_m,
@@ -333,7 +328,7 @@ class DPSyntheticTabularGenerator:
             raise RuntimeError("Synthesizer has not been fitted. Call fit() before sample().")
 
         d_num = len(self.numerical_cols)
-        
+
         if d_num > 0 and self.corr_matrix is not None:
             cov = self.corr_matrix + np.eye(d_num) * 1e-5
             try:
@@ -357,7 +352,7 @@ class DPSyntheticTabularGenerator:
         for col_idx, col in enumerate(self.numerical_cols):
             params = self.fitted_params[col]
             u = u_marginals[:, col_idx] if u_marginals is not None else self.rng.uniform(1e-6, 1.0 - 1e-6, size=num_rows)
-            
+
             if params["type"] == "lognormal":
                 z = stats.norm.ppf(u)
                 sampled_vals = np.exp(params["mu"] + params["sigma"] * z)
@@ -389,13 +384,13 @@ class DPSyntheticTabularGenerator:
                 params = self.fitted_params[col]
                 cats = params["categories"]
                 probs = params["probabilities"]
-                
+
                 sum_p = sum(probs)
                 if sum_p > 0:
                     norm_p = [p / sum_p for p in probs]
                 else:
                     norm_p = [1.0 / len(cats)] * len(cats)
-                    
+
                 result_dict[col] = self.rng.choice(cats, size=num_rows, p=norm_p)
 
         df_out = pd.DataFrame({col: result_dict[col] for col in self.column_types.keys()})

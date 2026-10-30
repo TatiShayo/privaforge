@@ -57,19 +57,19 @@ def test_cli_chamavault_dp_not_supported(temp_output_dir, capsys):
 def test_cli_generate_billflow_pure(temp_output_dir):
     """Test generating billflow data in pure mode."""
     main(["generate", "--schema", "billflow", "--rows", "20", "--mode", "pure", "--output", temp_output_dir])
-    
+
     # Check that output files exist
     data_file = os.path.join(temp_output_dir, "billflow.csv")
     report_file = os.path.join(temp_output_dir, "QUALITY_REPORT.md")
-    
+
     assert os.path.exists(data_file)
     assert os.path.exists(report_file)
-    
+
     # Check dataset structure
     df = pd.read_csv(data_file)
     assert len(df) == 20
     assert list(df.columns) == ["invoice_id", "amount", "date", "status"]
-    
+
     # Check report content
     with open(report_file, "r") as f:
         report_content = f.read()
@@ -81,18 +81,18 @@ def test_cli_generate_billflow_pure(temp_output_dir):
 def test_cli_generate_billflow_dp(temp_output_dir):
     """Test generating billflow data in dp mode."""
     main(["generate", "--schema", "billflow", "--rows", "25", "--mode", "dp", "--epsilon", "3.0", "--output", temp_output_dir])
-    
+
     data_file = os.path.join(temp_output_dir, "billflow.csv")
     report_file = os.path.join(temp_output_dir, "QUALITY_REPORT.md")
-    
+
     assert os.path.exists(data_file)
     assert os.path.exists(report_file)
-    
+
     # Check dataset structure
     df = pd.read_csv(data_file)
     assert len(df) == 25
     assert list(df.columns) == ["invoice_id", "amount", "date", "status"]
-    
+
     # Check report content
     with open(report_file, "r") as f:
         report_content = f.read()
@@ -105,27 +105,26 @@ def test_cli_generate_billflow_dp(temp_output_dir):
 def test_cli_generate_chamavault_pure(temp_output_dir):
     """Test generating chamavault relational data in pure mode."""
     main(["generate", "--schema", "chamavault", "--rows", "15", "--mode", "pure", "--output", temp_output_dir])
-    
+
     members_file = os.path.join(temp_output_dir, "members.csv")
     loans_file = os.path.join(temp_output_dir, "loans.csv")
     report_file = os.path.join(temp_output_dir, "QUALITY_REPORT.md")
-    
+
     assert os.path.exists(members_file)
     assert os.path.exists(loans_file)
     assert os.path.exists(report_file)
-    
+
     members_df = pd.read_csv(members_file)
     loans_df = pd.read_csv(loans_file)
-    
-    # Validate tables structure
+
     assert list(members_df.columns) == ["member_id", "region"]
     assert list(loans_df.columns) == ["loan_id", "member_id", "loan_amount", "interest_rate", "issue_date", "status"]
-    
+
     # Check referential integrity
     parent_ids = set(members_df["member_id"].dropna())
     child_ids = set(loans_df["member_id"].dropna())
     assert child_ids.issubset(parent_ids)
-    
+
     # Check report content
     with open(report_file, "r") as f:
         report_content = f.read()
@@ -144,7 +143,6 @@ def test_cli_rows_exceed_limit(temp_output_dir, capsys):
 
 def test_cli_unsafe_output(capsys):
     """Ensure sensitive/root output paths are rejected."""
-    # Test Windows system dirs & roots
     unsafe_paths = ["C:\\Windows", "C:\\Program Files", "C:\\", "C:/"]
     for path in unsafe_paths:
         with pytest.raises(SystemExit) as excinfo:
@@ -158,7 +156,7 @@ def test_safe_to_csv_permission_error(capsys):
     from privaforge.cli import safe_to_csv
     import pandas as pd
     df = pd.DataFrame({"a": [1]})
-    
+
     with patch("os.makedirs", side_effect=PermissionError("Mock permission denied")):
         with pytest.raises(PermissionError) as excinfo:
             safe_to_csv(df, "C:\\some_path\\file.csv")
@@ -176,12 +174,10 @@ def test_safe_write_text_success(tmp_path):
 def test_safe_write_text_permission_error(capsys):
     """Ensure safe_write_text catches PermissionError and reports/handles it gracefully."""
     from privaforge.cli import safe_write_text
-    
+
     with patch("os.makedirs", side_effect=PermissionError("Mock permission denied")):
         with pytest.raises(PermissionError) as excinfo:
             safe_write_text("content", "C:\\some_path\\file.txt")
         assert "Permission denied" in str(excinfo.value)
         captured = capsys.readouterr()
         assert "Permission Error" in captured.err
-
-

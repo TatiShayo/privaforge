@@ -14,11 +14,10 @@ import numpy as np
 from typing import Sequence, Any, Optional, Union, Tuple
 from scipy import stats
 
-
 class LaplaceMechanism:
     """
     Differentially private Laplace mechanism for scalar and 1D numerical queries.
-    
+
     Noise scale b = sensitivity / epsilon.
     PDF: f(x) = (1 / 2b) * exp(-|x| / b)
     Variance: 2 * b^2
@@ -36,12 +35,12 @@ class LaplaceMechanism:
             raise ValueError(f"Epsilon must be a finite real number, got {epsilon}")
         if epsilon <= 0:
             raise ValueError(f"Epsilon must be strictly positive (> 0), got {epsilon}")
-            
+
         if not isinstance(sensitivity, (int, float)) or math.isnan(sensitivity) or math.isinf(sensitivity):
             raise ValueError(f"Sensitivity must be a finite real number, got {sensitivity}")
         if sensitivity < 0:
             raise ValueError(f"Sensitivity must be non-negative (>= 0), got {sensitivity}")
-            
+
         if min_val is not None and max_val is not None and min_val > max_val:
             raise ValueError(f"min_val ({min_val}) cannot be greater than max_val ({max_val})")
 
@@ -49,7 +48,7 @@ class LaplaceMechanism:
         self.sensitivity = float(sensitivity)
         self.min_val = float(min_val) if min_val is not None else None
         self.max_val = float(max_val) if max_val is not None else None
-        
+
         if isinstance(random_state, np.random.Generator):
             self.rng = random_state
         elif random_state is not None:
@@ -73,16 +72,16 @@ class LaplaceMechanism:
         """Add Laplace noise to a scalar value and clip to [min_val, max_val] if defined."""
         if not isinstance(value, (int, float, np.number)) or math.isnan(value) or math.isinf(value):
             raise ValueError(f"Input value must be a finite number, got {value}")
-            
+
         if self.scale == 0.0:
             noised = float(value)
         else:
             noise = self.rng.laplace(loc=0.0, scale=self.scale)
             noised = float(value) + float(noise)
-            
+
         if self.min_val is not None or self.max_val is not None:
             noised = float(np.clip(noised, self.min_val, self.max_val))
-            
+
         return noised
 
     def randomise_vector(self, values: Sequence[float]) -> np.ndarray:
@@ -92,16 +91,16 @@ class LaplaceMechanism:
             return arr.copy()
         if np.any(np.isnan(arr)) or np.any(np.isinf(arr)):
             raise ValueError("Input array contains NaN or Inf values")
-            
+
         if self.scale == 0.0:
             noised = arr.copy()
         else:
             noise = self.rng.laplace(loc=0.0, scale=self.scale, size=arr.shape)
             noised = arr + noise
-            
+
         if self.min_val is not None or self.max_val is not None:
             noised = np.clip(noised, self.min_val, self.max_val)
-            
+
         return noised
 
     def pdf(self, x: float) -> float:
@@ -119,11 +118,10 @@ class LaplaceMechanism:
         else:
             return 1.0 - 0.5 * float(np.exp(-x / self.scale))
 
-
 class GaussianMechanism:
     """
     Differentially private Gaussian mechanism for scalar and 1D numerical queries.
-    
+
     Guarantees (epsilon, delta)-differential privacy.
     Standard scaling: sigma = (sensitivity * sqrt(2 * ln(1.25 / delta))) / epsilon
     Supports both classical and analytic Gaussian mechanisms.
@@ -143,17 +141,17 @@ class GaussianMechanism:
             raise ValueError(f"Epsilon must be a finite real number, got {epsilon}")
         if epsilon <= 0:
             raise ValueError(f"Epsilon must be strictly positive (> 0), got {epsilon}")
-            
+
         if not isinstance(delta, (int, float)) or math.isnan(delta) or math.isinf(delta):
             raise ValueError(f"Delta must be a finite real number, got {delta}")
         if delta <= 0 or delta >= 1:
             raise ValueError(f"Delta must be strictly between 0 and 1 (0 < delta < 1), got {delta}")
-            
+
         if not isinstance(sensitivity, (int, float)) or math.isnan(sensitivity) or math.isinf(sensitivity):
             raise ValueError(f"Sensitivity must be a finite real number, got {sensitivity}")
         if sensitivity < 0:
             raise ValueError(f"Sensitivity must be non-negative (>= 0), got {sensitivity}")
-            
+
         if min_val is not None and max_val is not None and min_val > max_val:
             raise ValueError(f"min_val ({min_val}) cannot be greater than max_val ({max_val})")
 
@@ -163,7 +161,7 @@ class GaussianMechanism:
         self.min_val = float(min_val) if min_val is not None else None
         self.max_val = float(max_val) if max_val is not None else None
         self.analytic = bool(analytic)
-        
+
         if isinstance(random_state, np.random.Generator):
             self.rng = random_state
         elif random_state is not None:
@@ -176,7 +174,7 @@ class GaussianMechanism:
         """Standard deviation of Gaussian noise."""
         if self.sensitivity == 0.0:
             return 0.0
-            
+
         if self.analytic:
             return self._calibrate_analytic_gaussian(self.epsilon, self.delta, self.sensitivity)
         else:
@@ -237,16 +235,16 @@ class GaussianMechanism:
         """Add Gaussian noise to a scalar value and clip to bounds if defined."""
         if not isinstance(value, (int, float, np.number)) or math.isnan(value) or math.isinf(value):
             raise ValueError(f"Input value must be a finite number, got {value}")
-            
+
         if self.sigma == 0.0:
             noised = float(value)
         else:
             noise = self.rng.normal(loc=0.0, scale=self.sigma)
             noised = float(value) + float(noise)
-            
+
         if self.min_val is not None or self.max_val is not None:
             noised = float(np.clip(noised, self.min_val, self.max_val))
-            
+
         return noised
 
     def randomise_vector(self, values: Sequence[float]) -> np.ndarray:
@@ -256,16 +254,16 @@ class GaussianMechanism:
             return arr.copy()
         if np.any(np.isnan(arr)) or np.any(np.isinf(arr)):
             raise ValueError("Input array contains NaN or Inf values")
-            
+
         if self.sigma == 0.0:
             noised = arr.copy()
         else:
             noise = self.rng.normal(loc=0.0, scale=self.sigma, size=arr.shape)
             noised = arr + noise
-            
+
         if self.min_val is not None or self.max_val is not None:
             noised = np.clip(noised, self.min_val, self.max_val)
-            
+
         return noised
 
     def pdf(self, x: float) -> float:
@@ -280,14 +278,13 @@ class GaussianMechanism:
             return 1.0 if x >= 0.0 else 0.0
         return float(stats.norm.cdf(x, loc=0.0, scale=self.sigma))
 
-
 class ExponentialMechanism:
     r"""
     Exponential Mechanism for discrete selection under Differential Privacy.
-    
+
     Selects candidate r in R with probability proportional to:
     P(r) \propto exp(epsilon * u(x, r) / (2 * sensitivity))
-    
+
     Includes log-sum-exp trick for numerical stability to prevent float overflow/underflow.
     """
 
@@ -301,7 +298,7 @@ class ExponentialMechanism:
             raise ValueError(f"Epsilon must be a finite real number, got {epsilon}")
         if epsilon <= 0:
             raise ValueError(f"Epsilon must be strictly positive (> 0), got {epsilon}")
-            
+
         if not isinstance(utility_sensitivity, (int, float)) or math.isnan(utility_sensitivity) or math.isinf(utility_sensitivity):
             raise ValueError(f"Utility sensitivity must be a finite real number, got {utility_sensitivity}")
         if utility_sensitivity <= 0:
@@ -309,7 +306,7 @@ class ExponentialMechanism:
 
         self.epsilon = float(epsilon)
         self.utility_sensitivity = float(utility_sensitivity)
-        
+
         if isinstance(random_state, np.random.Generator):
             self.rng = random_state
         elif random_state is not None:
@@ -329,15 +326,15 @@ class ExponentialMechanism:
 
         factor = self.epsilon / (2.0 * self.utility_sensitivity)
         scaled_scores = scores * factor
-        
+
         max_score = np.max(scaled_scores)
         exp_scores = np.exp(scaled_scores - max_score)
         sum_exp = np.sum(exp_scores)
-        
+
         if sum_exp <= 0 or math.isnan(sum_exp):
             probs = np.ones(len(scores)) / float(len(scores))
             return probs
-            
+
         probs = exp_scores / sum_exp
         total_p = np.sum(probs)
         if total_p > 0:
@@ -357,7 +354,6 @@ class ExponentialMechanism:
             raise ValueError(f"Length mismatch: {len(candidates)} candidates vs {len(utility_scores)} utility scores")
         idx = self.select_index(utility_scores)
         return candidates[idx]
-
 
 class VectorLaplaceMechanism:
     """
@@ -389,7 +385,7 @@ class VectorLaplaceMechanism:
         self.scale = (self.l1_sensitivity / self.epsilon) if self.l1_sensitivity > 0 else 0.0
         self.min_val = float(min_val) if min_val is not None else None
         self.max_val = float(max_val) if max_val is not None else None
-        
+
         if isinstance(random_state, np.random.Generator):
             self.rng = random_state
         elif random_state is not None:
@@ -412,7 +408,6 @@ class VectorLaplaceMechanism:
         if self.min_val is not None or self.max_val is not None:
             noised = np.clip(noised, self.min_val, self.max_val)
         return noised
-
 
 class VectorGaussianMechanism:
     """
@@ -458,7 +453,7 @@ class VectorGaussianMechanism:
             self.sigma = GaussianMechanism._calibrate_analytic_gaussian(self.epsilon, self.delta, self.l2_sensitivity)
         else:
             self.sigma = (self.l2_sensitivity * math.sqrt(2.0 * math.log(1.25 / self.delta))) / self.epsilon
-        
+
         if isinstance(random_state, np.random.Generator):
             self.rng = random_state
         elif random_state is not None:
